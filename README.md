@@ -1,110 +1,337 @@
-# Double V Partners Test
+# Double V Partners - Test Técnico Flutter
 
-Proyecto de prueba técnica desarrollado con Flutter siguiendo principios de Clean Architecture.
+Aplicación móvil desarrollada en Flutter siguiendo **Clean Architecture** con organización **Feature-First** y gestión de estado con **flutter_bloc**.
 
-## Arquitectura
+## 📋 Características
 
-Este proyecto sigue los principios de **Clean Architecture** dividido en tres capas principales:
+- ✅ **Arquitectura Limpia (Clean Architecture)** con separación en capas: Domain, Data y Presentation
+- ✅ **Organización Feature-First** para mejor escalabilidad
+- ✅ **Gestión de Estado** con flutter_bloc
+- ✅ **Inyección de Dependencias** con GetIt
+- ✅ **Navegación** con GoRouter
+- ✅ **Consumo de API REST** con Dio
+- ✅ **Manejo de Errores** funcional con Dartz (Either<Failure, Success>)
+- ✅ **Tests Unitarios** con mocktail y bloc_test
 
-### 1. Domain Layer (Capa de Dominio)
-- **Entities**: Modelos de negocio inmutables usando Equatable
-- **Repositories**: Interfaces abstractas que definen contratos
-- **Use Cases**: Lógica de negocio de la aplicación
+## 🎯 Funcionalidades
 
-### 2. Data Layer (Capa de Datos)
-- **Models**: Modelos que extienden las entidades con serialización
-- **Data Sources**: Remote y Local data sources
-- **Repository Implementations**: Implementaciones concretas de los repositorios
+### 1. Lista de Usuarios
+- Visualización de todos los usuarios
+- Pull-to-refresh para actualizar la lista
+- Navegación a detalle de usuario
+- Estado de carga y manejo de errores
 
-### 3. Presentation Layer (Capa de Presentación)
-- **BLoC**: Gestión de estado con flutter_bloc
-- **Screens**: Pantallas de la aplicación
-- **Widgets**: Componentes reutilizables
+### 2. Crear Usuario
+- Formulario completo con validaciones:
+  - Nombre (requerido)
+  - Apellido (requerido)
+  - Fecha de nacimiento (selector de fecha)
+  - Direcciones (múltiples, con país, departamento y municipio)
+- Agregar/eliminar direcciones dinámicamente
+- Validaciones en tiempo real
+- Indicadores de carga durante la creación
 
-## Características Técnicas
+### 3. Detalle de Usuario
+- Información completa del usuario
+- Avatar con inicial del nombre
+- Fecha de nacimiento formateada
+- Listado de todas las direcciones
+- Fechas de creación y actualización
+- Manejo de errores con opción de reintentar
 
-- ✅ **Clean Architecture**: Separación clara de capas
-- ✅ **flutter_bloc**: Gestión de estado predictible
-- ✅ **get_it + injectable**: Inyección de dependencias
-- ✅ **equatable**: Comparación de valores inmutables
-- ✅ **go_router**: Navegación declarativa
-- ✅ **dartz**: Programación funcional (Either para manejo de errores)
-
-## Estructura de Carpetas
+## 🏗️ Arquitectura
 
 ```
 lib/
-├── core/
-│   ├── constants/         # Constantes de la aplicación
-│   ├── errors/           # Excepciones y Failures
-│   ├── navigation/       # Configuración de rutas
-│   └── usecases/         # Clase base para casos de uso
-├── di/                   # Inyección de dependencias
-│   └── injection_container.dart
-├── domain/
-│   ├── entities/         # Entidades de negocio
-│   ├── repositories/     # Interfaces de repositorios
-│   └── usecases/         # Casos de uso
-├── data/
-│   ├── datasources/      # Fuentes de datos (local y remote)
-│   ├── models/           # Modelos de datos
-│   └── repositories/     # Implementaciones de repositorios
-└── presentation/
-    ├── bloc/             # BLoCs para gestión de estado
-    ├── screens/          # Pantallas de la app
-    └── widgets/          # Widgets reutilizables
+├── core/                          # Código compartido
+│   ├── constants/                 # Constantes de la app
+│   ├── error/                     # Excepciones y Failures
+│   ├── navigation/                # Rutas (GoRouter)
+│   ├── network/                   # Cliente HTTP (Dio)
+│   └── theme/                     # Temas de la app
+│
+├── features/                      # Features (Feature-First)
+│   └── users/                     # Feature de usuarios
+│       ├── data/                  # Capa de Datos
+│       │   ├── datasources/       # Remote & Local data sources
+│       │   ├── models/            # Modelos con serialización JSON
+│       │   └── repositories/      # Implementación de repositorios
+│       │
+│       ├── domain/                # Capa de Dominio
+│       │   ├── entities/          # Entidades de negocio
+│       │   ├── repositories/      # Interfaces de repositorios
+│       │   └── usecases/          # Casos de uso
+│       │
+│       └── presentation/          # Capa de Presentación
+│           ├── bloc/              # BLoC (Estado)
+│           ├── pages/             # Pantallas
+│           └── widgets/           # Widgets reutilizables
+│
+├── di/                            # Inyección de dependencias (GetIt)
+└── main.dart                      # Punto de entrada
 ```
 
-## Instalación
+## 📦 Dependencias Principales
 
-1. Clonar el repositorio
-2. Instalar dependencias:
+```yaml
+dependencies:
+  # State Management
+  flutter_bloc: ^9.1.1
+
+  # Functional Programming
+  dartz: ^0.10.1
+
+  # Value Equality
+  equatable: ^2.0.7
+
+  # Dependency Injection
+  get_it: ^8.2.0
+
+  # Navigation
+  go_router: ^16.3.0
+
+  # HTTP Client
+  dio: ^5.4.0
+
+  # Date formatting
+  intl: ^0.19.0
+
+dev_dependencies:
+  # Testing
+  bloc_test: ^10.1.3
+  mocktail: ^1.0.4
+```
+
+## 🔌 API Endpoints
+
+### POST /api/users
+Crea un nuevo usuario.
+
+**Request Body:**
+```json
+{
+  "name": "Juan",
+  "last_name": "Perez",
+  "birth_date": "1990-05-15T10:30:00Z",
+  "addresses": [
+    {
+      "country": "Colombia",
+      "department": "Antioquia",
+      "municipality": "Medellín"
+    }
+  ]
+}
+```
+
+### GET /api/users
+Obtiene la lista de todos los usuarios.
+
+**Response:**
+```json
+[
+  {
+    "id": "a1b2c3d4-uuid-example-5678",
+    "name": "Juan",
+    "last_name": "Perez",
+    "birth_date": "1990-05-15T10:30:00Z",
+    "created_at": "2025-10-23T16:45:00Z",
+    "updated_at": "2025-10-23T16:45:00Z",
+    "addresses": [
+      {
+        "id": "addr-uuid-001",
+        "country": "Colombia",
+        "department": "Antioquia",
+        "municipality": "Medellín"
+      }
+    ]
+  }
+]
+```
+
+### GET /api/users/:id
+Obtiene un usuario específico por ID.
+
+## 🚀 Instalación y Ejecución
+
+### Prerrequisitos
+- Flutter SDK >= 3.9.2
+- Dart SDK >= 3.9.2
+
+### Pasos
+
+1. **Clonar el repositorio**
+```bash
+git clone <repository-url>
+cd double_v_partners_test
+```
+
+2. **Instalar dependencias**
 ```bash
 flutter pub get
 ```
 
-3. Generar código de inyección de dependencias:
+3. **Configurar Variables de Entorno**
+
+Copia el archivo de ejemplo y edítalo con tu configuración:
 ```bash
-flutter pub run build_runner build --delete-conflicting-outputs
+cp .env.example .env
 ```
 
-## Ejecutar la aplicación
+Edita `.env` con tu URL de API:
+```env
+API_BASE_URL=https://tu-api-real.com
+API_TIMEOUT=30000
+ENVIRONMENT=development
+DEBUG_MODE=true
+ENABLE_LOGGING=true
+```
 
+Ver [ENV_CONFIG.md](ENV_CONFIG.md) para más detalles.
+
+4. **Ejecutar la aplicación**
 ```bash
 flutter run
 ```
 
-## Ejecutar tests
-
+5. **Ejecutar tests**
 ```bash
 flutter test
 ```
 
-## Dependencias Principales
+6. **Análisis de código**
+```bash
+flutter analyze
+```
 
-- **flutter_bloc**: ^9.1.1
-- **equatable**: ^2.0.7
-- **get_it**: ^8.2.0
-- **injectable**: ^2.5.2
-- **go_router**: ^16.3.0
-- **dartz**: ^0.10.1
+## 🧪 Testing
 
-## Dependencias de Desarrollo
+El proyecto incluye tests para:
 
-- **build_runner**: ^2.4.9
-- **injectable_generator**: ^2.6.1
-- **bloc_test**: ^10.0.0
-- **mocktail**: ^1.0.3
-- **flutter_lints**: ^5.0.0
+### Tests Unitarios
+- **Domain Layer**: Use Cases
+- **Presentation Layer**: BLoCs
 
-## Patrones Implementados
+**Ejecutar tests:**
+```bash
+flutter test
+```
 
-- **Repository Pattern**: Abstracción del acceso a datos
-- **Dependency Injection**: Desacoplamiento de componentes
-- **BLoC Pattern**: Gestión de estado reactiva
-- **Use Case Pattern**: Encapsulación de lógica de negocio
-- **Either Pattern**: Manejo funcional de errores
+**Cobertura de tests:**
+```bash
+flutter test --coverage
+```
 
-## Autor
+## 🔧 Configuración
 
-Desarrollado como prueba técnica para Double V Partners
+### Variables de Entorno
+
+El proyecto utiliza **flutter_dotenv** para manejar configuraciones:
+
+```dart
+// Acceder a variables
+import 'package:double_v_partners_test/core/config/env_config.dart';
+
+String apiUrl = EnvConfig.apiBaseUrl;
+bool isDebug = EnvConfig.isDebugMode;
+```
+
+**Configurar:**
+```bash
+cp .env.example .env
+# Editar .env con tus valores
+```
+
+Ver documentación completa en [ENV_CONFIG.md](ENV_CONFIG.md)
+
+### Personalizar el tema
+
+Editar `lib/core/theme/app_theme.dart` para cambiar colores, tipografías, etc.
+
+## 📱 Pantallas
+
+### 1. Splash Screen
+Pantalla inicial con logo y animación de carga (3 segundos).
+
+### 2. Lista de Usuarios (Home)
+- Muestra todos los usuarios en cards
+- Pull-to-refresh
+- FAB para crear nuevo usuario
+- Estados: loading, error, empty, loaded
+
+### 3. Crear Usuario
+- Formulario con validaciones
+- Selector de fecha de nacimiento
+- Gestión dinámica de múltiples direcciones
+- Diálogo modal para agregar direcciones
+
+### 4. Detalle de Usuario
+- Avatar con inicial
+- Información completa
+- Listado de direcciones
+- Fechas de creación/actualización
+- Manejo de errores con retry
+
+## 🎨 Características Técnicas
+
+### Manejo de Errores
+- `Either<Failure, Success>` de Dartz
+- Clases de Failure personalizadas (ServerFailure, NetworkFailure, etc.)
+- Manejo de excepciones en todas las capas
+- Mensajes de error amigables para el usuario
+
+### Estados del BLoC
+```dart
+- UserInitial: Estado inicial
+- UserLoading: Cargando datos
+- UsersLoaded: Lista de usuarios cargada
+- UserLoaded: Usuario único cargado
+- UserOperationSuccess: Operación exitosa
+- UserError: Error con mensaje
+```
+
+### Eventos del BLoC
+```dart
+- LoadUsersEvent: Cargar lista
+- LoadUserByIdEvent: Cargar usuario específico
+- CreateUserEvent: Crear nuevo usuario
+- UpdateUserEvent: Actualizar usuario
+- DeleteUserEvent: Eliminar usuario
+```
+
+## 🔍 Principios SOLID Aplicados
+
+- **S** - Single Responsibility: Cada clase tiene una única responsabilidad
+- **O** - Open/Closed: Abierto para extensión, cerrado para modificación
+- **L** - Liskov Substitution: Las implementaciones pueden sustituir interfaces
+- **I** - Interface Segregation: Interfaces específicas por funcionalidad
+- **D** - Dependency Inversion: Dependemos de abstracciones, no de concreciones
+
+## 📝 Buenas Prácticas
+
+- ✅ Código limpio y mantenible
+- ✅ Separación de responsabilidades
+- ✅ Inmutabilidad con Equatable
+- ✅ Validaciones en formularios
+- ✅ Manejo de estados de carga y error
+- ✅ Feedback visual al usuario (SnackBars)
+- ✅ Optimización de rendimiento (const constructors)
+- ✅ Comentarios en código cuando es necesario
+- ✅ Nombres descriptivos y significativos
+
+## 🤝 Contribuciones
+
+Para contribuir al proyecto:
+
+1. Fork el repositorio
+2. Crea una rama feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 👤 Autor
+
+**Jhon Zuluaga**
+
+## 📄 Licencia
+
+Este proyecto fue desarrollado como parte de un test técnico para Double V Partners.

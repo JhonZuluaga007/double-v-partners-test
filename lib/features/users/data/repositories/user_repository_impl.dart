@@ -3,60 +3,32 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/user_repository.dart';
-import '../datasources/user_local_datasource.dart';
-import '../datasources/user_remote_datasource.dart';
+import '../datasources/user_api_datasource.dart';
+import '../models/user_model.dart';
 
-/// Implementación del repositorio de usuarios - capa de datos
 class UserRepositoryImpl implements UserRepository {
-  final UserRemoteDataSource remoteDataSource;
-  final UserLocalDataSource localDataSource;
+  final UserApiDataSource apiDataSource;
 
-  UserRepositoryImpl({
-    required this.remoteDataSource,
-    required this.localDataSource,
-  });
+  UserRepositoryImpl({required this.apiDataSource});
 
   @override
   Future<Either<Failure, List<UserEntity>>> getUsers() async {
     try {
-      // Intentar obtener datos remotos
-      final users = await remoteDataSource.getUsers();
-
-      // Cachear los datos
-      await localDataSource.cacheUsers(users);
-
+      final users = await apiDataSource.getUsers();
       return Right(users);
     } on ServerException catch (e) {
-      // Si falla el servidor, intentar obtener datos del caché
-      try {
-        final cachedUsers = await localDataSource.getCachedUsers();
-        if (cachedUsers.isNotEmpty) {
-          return Right(cachedUsers);
-        }
-        return Left(ServerFailure(e.message ?? 'Error del servidor'));
-      } on CacheException catch (e) {
-        return Left(CacheFailure(e.message ?? 'Error al cargar caché'));
-      }
+      return Left(ServerFailure(e.message ?? 'Error del servidor'));
     } on NetworkException catch (e) {
-      // Si hay error de red, intentar obtener del caché
-      try {
-        final cachedUsers = await localDataSource.getCachedUsers();
-        if (cachedUsers.isNotEmpty) {
-          return Right(cachedUsers);
-        }
-        return Left(NetworkFailure(e.message ?? 'Error de conexión'));
-      } on CacheException catch (e) {
-        return Left(CacheFailure(e.message ?? 'Error al cargar caché'));
-      }
+      return Left(NetworkFailure(e.message ?? 'Error de conexión'));
     } catch (e) {
       return Left(GeneralFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, UserEntity>> getUserById(int id) async {
+  Future<Either<Failure, UserEntity>> getUserById(String id) async {
     try {
-      final user = await remoteDataSource.getUserById(id);
+      final user = await apiDataSource.getUserById(id);
       return Right(user);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message ?? 'Error del servidor'));
@@ -68,13 +40,11 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> createUser({
-    required String name,
-    required String email,
-  }) async {
+  Future<Either<Failure, UserEntity>> createUser(UserEntity user) async {
     try {
-      final user = await remoteDataSource.createUser(name: name, email: email);
-      return Right(user);
+      final userModel = UserModel.fromEntity(user);
+      final createdUser = await apiDataSource.createUser(userModel);
+      return Right(createdUser);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message ?? 'Error del servidor'));
     } on NetworkException catch (e) {
@@ -85,18 +55,11 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> updateUser({
-    required int id,
-    required String name,
-    required String email,
-  }) async {
+  Future<Either<Failure, UserEntity>> updateUser(UserEntity user) async {
     try {
-      final user = await remoteDataSource.updateUser(
-        id: id,
-        name: name,
-        email: email,
-      );
-      return Right(user);
+      final userModel = UserModel.fromEntity(user);
+      final updatedUser = await apiDataSource.updateUser(userModel);
+      return Right(updatedUser);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message ?? 'Error del servidor'));
     } on NetworkException catch (e) {
@@ -107,9 +70,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> deleteUser(int id) async {
+  Future<Either<Failure, bool>> deleteUser(String id) async {
     try {
-      final result = await remoteDataSource.deleteUser(id);
+      final result = await apiDataSource.deleteUser(id);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message ?? 'Error del servidor'));

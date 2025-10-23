@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
+import '../../../domain/entities/user_entity.dart';
 
-/// Eventos del Bloc de usuarios
+/// Eventos del UserBloc
 abstract class UserEvent extends Equatable {
   const UserEvent();
 
@@ -13,39 +14,41 @@ class LoadUsersEvent extends UserEvent {
   const LoadUsersEvent();
 }
 
-/// Evento para crear un nuevo usuario
-class CreateUserEvent extends UserEvent {
-  final String name;
-  final String email;
+/// Evento para cargar un usuario específico por ID
+class LoadUserByIdEvent extends UserEvent {
+  final String userId;
 
-  const CreateUserEvent({required this.name, required this.email});
+  const LoadUserByIdEvent(this.userId);
 
   @override
-  List<Object?> get props => [name, email];
+  List<Object?> get props => [userId];
 }
 
-/// Evento para actualizar un usuario
-class UpdateUserEvent extends UserEvent {
-  final int id;
-  final String name;
-  final String email;
+class CreateUserEvent extends UserEvent {
+  final UserEntity user;
 
-  const UpdateUserEvent({
-    required this.id,
-    required this.name,
-    required this.email,
-  });
+  const CreateUserEvent(this.user);
 
   @override
-  List<Object?> get props => [id, name, email];
+  List<Object?> get props => [user];
+}
+
+/// Evento para actualizar un usuario existente
+class UpdateUserEvent extends UserEvent {
+  final UserEntity user;
+
+  const UpdateUserEvent(this.user);
+
+  @override
+  List<Object?> get props => [user];
 }
 
 /// Evento para eliminar un usuario
 class DeleteUserEvent extends UserEvent {
-  final int id;
+  final String userId;
 
-  const DeleteUserEvent(this.id);
+  const DeleteUserEvent(this.userId);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [userId];
 }
