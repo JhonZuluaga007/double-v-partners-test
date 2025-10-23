@@ -1,7 +1,5 @@
-/// Excepciones personalizadas de la aplicación
 library;
 
-/// Excepción lanzada cuando hay un error del servidor
 class ServerException implements Exception {
   final String? message;
 
@@ -11,7 +9,6 @@ class ServerException implements Exception {
   String toString() => message ?? 'ServerException';
 }
 
-/// Excepción lanzada cuando hay un error de caché
 class CacheException implements Exception {
   final String? message;
 
@@ -21,7 +18,6 @@ class CacheException implements Exception {
   String toString() => message ?? 'CacheException';
 }
 
-/// Excepción lanzada cuando hay un error de red
 class NetworkException implements Exception {
   final String? message;
 

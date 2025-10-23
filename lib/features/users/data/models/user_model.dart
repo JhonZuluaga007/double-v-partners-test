@@ -1,39 +1,65 @@
-import '../../../users/domain/entities/user_entity.dart';
+import '../../domain/entities/user_entity.dart';
+import 'address_model.dart';
 
-/// Modelo de datos de usuario - capa de datos
-/// Extiende la entidad y añade funcionalidad de serialización
 class UserModel extends UserEntity {
   const UserModel({
-    required super.id,
+    super.id,
     required super.name,
-    required super.email,
+    required super.lastName,
+    required super.birthDate,
+    super.createdAt,
+    super.updatedAt,
+    required super.addresses,
   });
 
-  /// Crea un UserModel desde JSON
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as int,
+      id: json['id'] as String?,
       name: json['name'] as String,
-      email: json['email'] as String,
+      lastName: json['last_name'] as String,
+      birthDate: DateTime.parse(json['birth_date'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
+      addresses: (json['addresses'] as List<dynamic>)
+          .map(
+            (address) => AddressModel.fromJson(address as Map<String, dynamic>),
+          )
+          .toList(),
     );
   }
 
-  /// Convierte el UserModel a JSON
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'email': email};
+    final json = <String, dynamic>{
+      'name': name,
+      'last_name': lastName,
+      'birth_date': birthDate.toIso8601String(),
+      'addresses': addresses
+          .map((address) => AddressModel.fromEntity(address).toJson())
+          .toList(),
+    };
+
+    if (id != null) json['id'] = id;
+    if (createdAt != null) json['created_at'] = createdAt!.toIso8601String();
+    if (updatedAt != null) json['updated_at'] = updatedAt!.toIso8601String();
+
+    return json;
   }
 
-  /// Crea un UserModel desde una entidad
   factory UserModel.fromEntity(UserEntity entity) {
-    return UserModel(id: entity.id, name: entity.name, email: entity.email);
-  }
-
-  /// Copia el modelo con los cambios especificados
-  UserModel copyWith({int? id, String? name, String? email}) {
     return UserModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      email: email ?? this.email,
+      id: entity.id,
+      name: entity.name,
+      lastName: entity.lastName,
+      birthDate: entity.birthDate,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      addresses: entity.addresses
+          .map((address) => AddressModel.fromEntity(address))
+          .toList(),
     );
   }
 }

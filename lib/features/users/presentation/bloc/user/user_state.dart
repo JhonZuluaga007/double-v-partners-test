@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../../domain/entities/user_entity.dart';
 
-/// Estados del Bloc de usuarios
+/// Estados del UserBloc
 abstract class UserState extends Equatable {
   const UserState();
 
@@ -19,17 +19,27 @@ class UserLoading extends UserState {
   const UserLoading();
 }
 
-/// Estado de éxito al cargar usuarios
-class UserLoaded extends UserState {
+/// Estado de lista de usuarios cargada
+class UsersLoaded extends UserState {
   final List<UserEntity> users;
 
-  const UserLoaded(this.users);
+  const UsersLoaded(this.users);
 
   @override
   List<Object?> get props => [users];
 }
 
-/// Estado de éxito al crear/actualizar/eliminar usuario
+/// Estado de usuario único cargado
+class UserLoaded extends UserState {
+  final UserEntity user;
+
+  const UserLoaded(this.user);
+
+  @override
+  List<Object?> get props => [user];
+}
+
+/// Estado de operación exitosa (crear/actualizar/eliminar)
 class UserOperationSuccess extends UserState {
   final String message;
 
