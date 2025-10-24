@@ -9,7 +9,6 @@ import 'package:double_v_partners_test/features/users/data/models/user_model.dar
 import 'package:double_v_partners_test/features/users/data/repositories/user_repository_impl.dart';
 import 'package:double_v_partners_test/features/users/domain/entities/address_entity.dart';
 import 'package:double_v_partners_test/features/users/domain/entities/user_entity.dart';
-import 'package:double_v_partners_test/features/users/domain/repositories/user_repository.dart';
 
 class MockUserApiDataSource extends Mock implements UserApiDataSource {}
 

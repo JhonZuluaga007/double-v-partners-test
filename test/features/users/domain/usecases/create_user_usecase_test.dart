@@ -24,13 +24,6 @@ void main() {
     useCase = CreateUserUseCase(mockRepository);
   });
 
-  const tAddress = AddressEntity(
-    id: 'addr1',
-    country: 'Colombia',
-    department: 'Antioquia',
-    municipality: 'Medellín',
-  );
-
   final tUser = UserEntity(
     name: 'John',
     lastName: 'Doe',
