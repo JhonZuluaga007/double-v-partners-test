@@ -10,7 +10,6 @@ import '../../../../di/injection_container.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/create_user/create_user_bloc.dart';
-import '../widgets/address_form_field.dart';
 import '../widgets/address_list_widget.dart';
 
 class CreateUserScreen extends StatefulWidget {
@@ -38,19 +37,6 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     setState(() {
       _selectedDate = date;
     });
-  }
-
-  void _addAddress() {
-    showDialog(
-      context: context,
-      builder: (context) => AddressFormDialog(
-        onSave: (address) {
-          setState(() {
-            _addresses.add(address);
-          });
-        },
-      ),
-    );
   }
 
   void _addAddressFromGeo() async {
@@ -213,27 +199,16 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         SectionHeader(
                           title: 'Direcciones',
                           icon: Icons.location_on_outlined,
-                          action: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton.filledTonal(
-                                onPressed: _addAddress,
-                                icon: const Icon(Icons.add),
-                                tooltip: 'Agregar dirección manual',
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton.filledTonal(
-                                onPressed: _addAddressFromGeo,
-                                icon: const Icon(Icons.public),
-                                tooltip: 'Seleccionar ubicación geográfica',
-                              ),
-                            ],
+                          action: IconButton.filledTonal(
+                            onPressed: _addAddressFromGeo,
+                            icon: const Icon(Icons.public),
+                            tooltip: 'Seleccionar ubicación geográfica',
                           ),
                         ),
                         const SizedBox(height: 8),
                         AddressListWidget(
                           addresses: _addresses,
-                          onAdd: _addAddress,
+                          onAdd: _addAddressFromGeo,
                           onDelete: (index) => _removeAddress(index),
                           showActions: true,
                         ),
