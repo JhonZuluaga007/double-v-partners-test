@@ -14,15 +14,19 @@ class UserModel extends UserEntity {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String?,
+      id: (json['id'] ?? json['UserID']) as String?,
       name: json['name'] as String,
       lastName: json['last_name'] as String,
       birthDate: DateTime.parse(json['birth_date'] as String),
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
+          : json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
           : null,
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
+          : json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
           : null,
       addresses: (json['addresses'] as List<dynamic>)
           .map(

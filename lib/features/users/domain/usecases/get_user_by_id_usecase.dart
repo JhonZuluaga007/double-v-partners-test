@@ -3,7 +3,6 @@ import '../../../../core/error/failures.dart';
 import '../entities/user_entity.dart';
 import '../repositories/user_repository.dart';
 
-/// Caso de uso para obtener un usuario por ID
 class GetUserByIdUseCase {
   final UserRepository repository;
 

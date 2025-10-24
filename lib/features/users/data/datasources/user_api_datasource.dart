@@ -19,7 +19,7 @@ class UserApiDataSourceImpl implements UserApiDataSource {
   @override
   Future<List<UserModel>> getUsers() async {
     try {
-      final response = await apiClient.dio.get('/api/users');
+      final response = await apiClient.dio.get('/users');
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data as List<dynamic>;
@@ -48,7 +48,7 @@ class UserApiDataSourceImpl implements UserApiDataSource {
   @override
   Future<UserModel> getUserById(String id) async {
     try {
-      final response = await apiClient.dio.get('/api/users/$id');
+      final response = await apiClient.dio.get('/users/$id');
 
       if (response.statusCode == 200) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);
@@ -72,10 +72,7 @@ class UserApiDataSourceImpl implements UserApiDataSource {
   @override
   Future<UserModel> createUser(UserModel user) async {
     try {
-      final response = await apiClient.dio.post(
-        '/api/users',
-        data: user.toJson(),
-      );
+      final response = await apiClient.dio.post('/users', data: user.toJson());
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);
@@ -100,7 +97,7 @@ class UserApiDataSourceImpl implements UserApiDataSource {
   Future<UserModel> updateUser(UserModel user) async {
     try {
       final response = await apiClient.dio.put(
-        '/api/users/${user.id}',
+        '/users/${user.id}',
         data: user.toJson(),
       );
 
@@ -128,7 +125,7 @@ class UserApiDataSourceImpl implements UserApiDataSource {
   @override
   Future<bool> deleteUser(String id) async {
     try {
-      final response = await apiClient.dio.delete('/api/users/$id');
+      final response = await apiClient.dio.delete('/users/$id');
 
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;

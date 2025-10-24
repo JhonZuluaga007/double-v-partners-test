@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/address_entity.dart';
 
-/// Diálogo para agregar/editar una dirección
 class AddressFormDialog extends StatefulWidget {
   final AddressEntity? initialAddress;
   final Function(AddressEntity) onSave;

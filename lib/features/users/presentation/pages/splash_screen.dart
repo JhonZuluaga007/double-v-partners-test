@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/app_router.dart';
 
-/// Pantalla de splash que se muestra al iniciar la aplicación
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -18,7 +17,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToHome() async {
-    // Simular carga inicial
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
