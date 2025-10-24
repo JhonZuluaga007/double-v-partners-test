@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../../core/widgets/date_picker_field.dart';
+import '../../../../core/widgets/form_field_widget.dart';
+import '../../../../core/widgets/section_header.dart';
 import '../../../../di/injection_container.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/create_user/create_user_bloc.dart';
 import '../widgets/address_form_field.dart';
+import '../widgets/address_list_widget.dart';
 
 class CreateUserScreen extends StatefulWidget {
   const CreateUserScreen({super.key});
@@ -29,20 +32,10 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime(2000),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      locale: const Locale('es', 'ES'),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
+  void _onDateSelected(DateTime date) {
+    setState(() {
+      _selectedDate = date;
+    });
   }
 
   void _addAddress() {
@@ -99,8 +92,6 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
-
     return BlocProvider(
       create: (context) => getIt<CreateUserBloc>(),
       child: BlocListener<CreateUserBloc, CreateUserState>(
@@ -151,18 +142,15 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        Text(
-                          'Información Personal',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                        SectionHeader(
+                          title: 'Información Personal',
+                          icon: Icons.person_outline,
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        FormFieldWidget(
                           controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre',
-                            prefixIcon: Icon(Icons.person_outline),
-                          ),
+                          label: 'Nombre',
+                          prefixIcon: Icons.person_outline,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Por favor ingresa el nombre';
@@ -171,12 +159,10 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        FormFieldWidget(
                           controller: _lastNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Apellido',
-                            prefixIcon: Icon(Icons.person_outline),
-                          ),
+                          label: 'Apellido',
+                          prefixIcon: Icons.person_outline,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Por favor ingresa el apellido';
@@ -185,95 +171,27 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        InkWell(
-                          onTap: () => _selectDate(context),
-                          child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: 'Fecha de Nacimiento',
-                              prefixIcon: Icon(Icons.cake_outlined),
-                              suffixIcon: Icon(Icons.calendar_today),
-                            ),
-                            child: Text(
-                              _selectedDate == null
-                                  ? 'Selecciona una fecha'
-                                  : dateFormat.format(_selectedDate!),
-                              style: TextStyle(
-                                color: _selectedDate == null
-                                    ? Colors.grey[600]
-                                    : null,
-                              ),
-                            ),
-                          ),
+                        DatePickerField(
+                          selectedDate: _selectedDate,
+                          onDateSelected: _onDateSelected,
+                          label: 'Fecha de Nacimiento',
                         ),
                         const SizedBox(height: 32),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Direcciones',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            IconButton.filledTonal(
-                              onPressed: _addAddress,
-                              icon: const Icon(Icons.add),
-                            ),
-                          ],
+                        SectionHeader(
+                          title: 'Direcciones',
+                          icon: Icons.location_on_outlined,
+                          action: IconButton.filledTonal(
+                            onPressed: _addAddress,
+                            icon: const Icon(Icons.add),
+                          ),
                         ),
                         const SizedBox(height: 8),
-                        if (_addresses.isEmpty)
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(24),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.location_off_outlined,
-                                    size: 48,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'No hay direcciones',
-                                    style: TextStyle(color: Colors.grey[600]),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Agrega al menos una dirección',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.grey[500]),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else
-                          ...List.generate(_addresses.length, (index) {
-                            final address = _addresses[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).primaryColor,
-                                  child: const Icon(
-                                    Icons.location_on,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                title: Text(address.municipality),
-                                subtitle: Text(
-                                  '${address.department}, ${address.country}',
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete_outline),
-                                  onPressed: () => _removeAddress(index),
-                                  color: Colors.red,
-                                ),
-                              ),
-                            );
-                          }),
+                        AddressListWidget(
+                          addresses: _addresses,
+                          onAdd: _addAddress,
+                          onDelete: (index) => _removeAddress(index),
+                          showActions: true,
+                        ),
                         const SizedBox(height: 32),
                         Builder(
                           builder: (context) {

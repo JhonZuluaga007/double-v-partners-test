@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/error_widget.dart';
+import '../../../../core/widgets/loading_widget.dart';
 import '../../../../di/injection_container.dart';
 import '../bloc/users_list/users_list_bloc.dart';
 import '../widgets/user_card.dart';
@@ -35,47 +38,27 @@ class UsersListScreen extends StatelessWidget {
         body: BlocBuilder<UsersListBloc, UsersListState>(
           builder: (context, state) {
             return state.when(
-              initial: () => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.info_outline, size: 80, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Carga los usuarios',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
+              initial: () => const EmptyStateWidget(
+                icon: Icons.info_outline,
+                title: 'Carga los usuarios',
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingWidget(),
               loaded: (users) {
                 if (users.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.people_outline,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No hay usuarios',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(color: Colors.grey[600]),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Crea tu primer usuario',
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
+                  return EmptyStateWidget(
+                    icon: Icons.people_outline,
+                    title: 'No hay usuarios',
+                    subtitle: 'Crea tu primer usuario',
+                    onAction: () async {
+                      final result = await context.push(AppRouter.createUser);
+                      if (result == true && context.mounted) {
+                        context.read<UsersListBloc>().add(
+                          const UsersListEvent.refresh(),
+                        );
+                      }
+                    },
+                    actionText: 'Crear Usuario',
+                    actionIcon: Icons.add,
                   );
                 }
 
@@ -111,41 +94,13 @@ class UsersListScreen extends StatelessWidget {
                   },
                 );
               },
-              error: (message) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, size: 80, color: Colors.red[300]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error al cargar usuarios',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        message,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Builder(
-                      builder: (context) {
-                        return FilledButton.icon(
-                          onPressed: () {
-                            context.read<UsersListBloc>().add(
-                              const UsersListEvent.load(),
-                            );
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Reintentar'),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+              error: (message) => CustomErrorWidget(
+                message: message,
+                onRetry: () {
+                  context.read<UsersListBloc>().add(
+                    const UsersListEvent.load(),
+                  );
+                },
               ),
             );
           },

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/widgets/error_widget.dart';
+import '../../../../core/widgets/loading_widget.dart';
+import '../../../../core/widgets/section_header.dart';
 import '../../../../di/injection_container.dart';
 import '../bloc/user_detail/user_detail_bloc.dart';
+import '../widgets/address_list_widget.dart';
+import '../widgets/user_avatar.dart';
+import '../widgets/user_info_card.dart';
 
 class UserDetailScreen extends StatelessWidget {
   final String userId;
@@ -11,7 +17,6 @@ class UserDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd/MM/yyyy');
     final dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm');
 
     return BlocProvider(
@@ -23,7 +28,7 @@ class UserDetailScreen extends StatelessWidget {
           builder: (context, state) {
             return state.when(
               initial: () => const SizedBox(),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const LoadingWidget(),
               loaded: (user) {
                 return SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
@@ -33,20 +38,10 @@ class UserDetailScreen extends StatelessWidget {
                       Center(
                         child: Column(
                           children: [
-                            Hero(
-                              tag: 'user-avatar-$userId',
-                              child: CircleAvatar(
-                                backgroundColor: Theme.of(context).primaryColor,
-                                radius: 60,
-                                child: Text(
-                                  user.name[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
+                            UserAvatar(
+                              user: user,
+                              radius: 60,
+                              heroTag: 'user-avatar-$userId',
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -75,30 +70,14 @@ class UserDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      _SectionHeader(
+                      SectionHeader(
                         title: 'Información Personal',
                         icon: Icons.person_outline,
                       ),
                       const SizedBox(height: 12),
-                      _InfoCard(
-                        children: [
-                          _InfoRow(
-                            icon: Icons.person,
-                            label: 'Nombre',
-                            value: user.name,
-                          ),
-                          const Divider(),
-                          _InfoRow(
-                            icon: Icons.person_outline,
-                            label: 'Apellido',
-                            value: user.lastName,
-                          ),
-                          const Divider(),
-                          _InfoRow(
-                            icon: Icons.cake_outlined,
-                            label: 'Fecha de Nacimiento',
-                            value: dateFormat.format(user.birthDate),
-                          ),
+                      UserInfoCard(
+                        user: user,
+                        additionalFields: [
                           if (user.createdAt != null) ...[
                             const Divider(),
                             _InfoRow(
@@ -118,162 +97,27 @@ class UserDetailScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      _SectionHeader(
+                      SectionHeader(
                         title: 'Direcciones (${user.addresses.length})',
                         icon: Icons.location_on_outlined,
                       ),
                       const SizedBox(height: 12),
-                      ...List.generate(user.addresses.length, (index) {
-                        final address = user.addresses[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(
-                                          context,
-                                        ).primaryColor.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        Icons.location_on,
-                                        color: Theme.of(context).primaryColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            address.municipality,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .titleMedium
-                                                ?.copyWith(
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${address.department}, ${address.country}',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium
-                                                ?.copyWith(
-                                                  color: Colors.grey[600],
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (address.id != null) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'ID: ${address.id}',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: Colors.grey[500]),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
+                      AddressListWidget(addresses: user.addresses),
                     ],
                   ),
                 );
               },
-              error: (message) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 80,
-                        color: Colors.red[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar usuario',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          message,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      FilledButton.icon(
-                        onPressed: () {
-                          context.read<UserDetailBloc>().add(
-                            const UserDetailEvent.refresh(),
-                          );
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reintentar'),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              error: (message) => CustomErrorWidget(
+                message: message,
+                onRetry: () {
+                  context.read<UserDetailBloc>().add(
+                    const UserDetailEvent.refresh(),
+                  );
+                },
+              ),
             );
           },
         ),
-      ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
-  const _SectionHeader({required this.title, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Theme.of(context).primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: Theme.of(
-            context,
-          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  final List<Widget> children;
-
-  const _InfoCard({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: children),
       ),
     );
   }
