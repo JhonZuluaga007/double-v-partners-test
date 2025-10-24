@@ -39,3 +39,4 @@ flutter:
 
   assets:
     - .env
+    - assets/geo_data.json
