@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/navigation/app_router.dart';
+import '../../../../core/widgets/action_button.dart';
 import '../../../../core/widgets/date_picker_field.dart';
 import '../../../../core/widgets/form_field_widget.dart';
 import '../../../../core/widgets/section_header.dart';
@@ -49,6 +51,37 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
         },
       ),
     );
+  }
+
+  void _addAddressFromGeo() async {
+    final result = await context.pushNamed(AppRouter.addressFormName);
+    if (result != null && result is Map<String, String>) {
+      final country = result['country'] ?? '';
+      final state = result['state'] ?? '';
+      final city = result['city'] ?? '';
+
+      if (country.isNotEmpty && state.isNotEmpty && city.isNotEmpty) {
+        final address = AddressEntity(
+          country: country,
+          department: state,
+          municipality: city,
+        );
+
+        setState(() {
+          _addresses.add(address);
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Dirección agregada: $city, $state, $country'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    }
   }
 
   void _removeAddress(int index) {
@@ -180,9 +213,21 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         SectionHeader(
                           title: 'Direcciones',
                           icon: Icons.location_on_outlined,
-                          action: IconButton.filledTonal(
-                            onPressed: _addAddress,
-                            icon: const Icon(Icons.add),
+                          action: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton.filledTonal(
+                                onPressed: _addAddress,
+                                icon: const Icon(Icons.add),
+                                tooltip: 'Agregar dirección manual',
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton.filledTonal(
+                                onPressed: _addAddressFromGeo,
+                                icon: const Icon(Icons.public),
+                                tooltip: 'Seleccionar ubicación geográfica',
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -193,21 +238,11 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                           showActions: true,
                         ),
                         const SizedBox(height: 32),
-                        Builder(
-                          builder: (context) {
-                            return FilledButton.icon(
-                              onPressed: isSubmitting
-                                  ? null
-                                  : () => _submitForm(context),
-                              icon: const Icon(Icons.save),
-                              label: const Text('Crear Usuario'),
-                              style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                              ),
-                            );
-                          },
+                        ActionButton.create(
+                          isEnabled: !isSubmitting,
+                          onPressed: isSubmitting
+                              ? null
+                              : () => _submitForm(context),
                         ),
                         const SizedBox(height: 16),
                       ],
