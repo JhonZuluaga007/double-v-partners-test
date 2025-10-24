@@ -1,37 +1,51 @@
 library;
 
-class ServerException implements Exception {
+import 'package:equatable/equatable.dart';
+
+class ServerException extends Equatable implements Exception {
   final String? message;
 
-  ServerException([this.message]);
+  const ServerException([this.message]);
 
   @override
   String toString() => message ?? 'ServerException';
+
+  @override
+  List<Object?> get props => [message];
 }
 
-class CacheException implements Exception {
+class CacheException extends Equatable implements Exception {
   final String? message;
 
-  CacheException([this.message]);
+  const CacheException([this.message]);
 
   @override
   String toString() => message ?? 'CacheException';
+
+  @override
+  List<Object?> get props => [message];
 }
 
-class NetworkException implements Exception {
+class NetworkException extends Equatable implements Exception {
   final String? message;
 
-  NetworkException([this.message]);
+  const NetworkException([this.message]);
 
   @override
   String toString() => message ?? 'NetworkException';
+
+  @override
+  List<Object?> get props => [message];
 }
 
-class GeneralException implements Exception {
+class GeneralException extends Equatable implements Exception {
   final String? message;
 
-  GeneralException([this.message]);
+  const GeneralException([this.message]);
 
   @override
   String toString() => message ?? 'GeneralException';
+
+  @override
+  List<Object?> get props => [message];
 }
