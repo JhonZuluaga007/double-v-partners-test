@@ -26,3 +26,12 @@ class NetworkException implements Exception {
   @override
   String toString() => message ?? 'NetworkException';
 }
+
+class GeneralException implements Exception {
+  final String? message;
+
+  GeneralException([this.message]);
+
+  @override
+  String toString() => message ?? 'GeneralException';
+}
