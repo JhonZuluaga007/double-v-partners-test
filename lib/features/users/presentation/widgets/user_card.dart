@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/user_entity.dart';
 
-/// Widget para mostrar una tarjeta de usuario
 class UserCard extends StatelessWidget {
   final UserEntity user;
   final VoidCallback? onTap;

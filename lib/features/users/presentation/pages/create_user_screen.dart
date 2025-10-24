@@ -5,12 +5,9 @@ import 'package:intl/intl.dart';
 import '../../../../di/injection_container.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/user_entity.dart';
-import '../bloc/user/user_bloc.dart';
-import '../bloc/user/user_event.dart';
-import '../bloc/user/user_state.dart';
+import '../bloc/create_user/create_user_bloc.dart';
 import '../widgets/address_form_field.dart';
 
-/// Pantalla para crear un nuevo usuario
 class CreateUserScreen extends StatefulWidget {
   const CreateUserScreen({super.key});
 
@@ -67,7 +64,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     });
   }
 
-  void _submitForm() {
+  void _submitForm(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       if (_selectedDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +93,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
         addresses: _addresses,
       );
 
-      context.read<UserBloc>().add(CreateUserEvent(user));
+      context.read<CreateUserBloc>().add(CreateUserEvent.submit(user));
     }
   }
 
@@ -105,31 +102,48 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
     final dateFormat = DateFormat('dd/MM/yyyy');
 
     return BlocProvider(
-      create: (context) => getIt<UserBloc>(),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Crear Usuario')),
-        body: BlocListener<UserBloc, UserState>(
-          listener: (context, state) {
-            if (state is UserError) {
+      create: (context) => getIt<CreateUserBloc>(),
+      child: BlocListener<CreateUserBloc, CreateUserState>(
+        listener: (context, state) {
+          state.when(
+            initial: () {},
+            submitting: () {},
+            success: (user) {
+              debugPrint('✅ Usuario creado, navegando de vuelta...');
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-            if (state is UserOperationSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
+                const SnackBar(
+                  content: Text('Usuario creado exitosamente'),
                   backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
                 ),
               );
-              context.pop();
-            }
-          },
-          child: BlocBuilder<UserBloc, UserState>(
+              context.pop(true);
+            },
+            error: (message) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error: $message'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
+                  action: SnackBarAction(
+                    label: 'OK',
+                    textColor: Colors.white,
+                    onPressed: () {},
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        child: Scaffold(
+          appBar: AppBar(title: const Text('Crear Usuario')),
+          body: BlocBuilder<CreateUserBloc, CreateUserState>(
             builder: (context, state) {
+              final isSubmitting = state.maybeWhen(
+                submitting: () => true,
+                orElse: () => false,
+              );
+
               return Stack(
                 children: [
                   Form(
@@ -137,7 +151,6 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        // Información Personal
                         Text(
                           'Información Personal',
                           style: Theme.of(context).textTheme.titleLarge
@@ -192,10 +205,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 32),
-
-                        // Direcciones
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -264,23 +274,28 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                               ),
                             );
                           }),
-
                         const SizedBox(height: 32),
-
-                        // Botón de enviar
-                        FilledButton.icon(
-                          onPressed: state is UserLoading ? null : _submitForm,
-                          icon: const Icon(Icons.save),
-                          label: const Text('Crear Usuario'),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
+                        Builder(
+                          builder: (context) {
+                            return FilledButton.icon(
+                              onPressed: isSubmitting
+                                  ? null
+                                  : () => _submitForm(context),
+                              icon: const Icon(Icons.save),
+                              label: const Text('Crear Usuario'),
+                              style: FilledButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 16),
                       ],
                     ),
                   ),
-                  if (state is UserLoading)
+                  if (isSubmitting)
                     Container(
                       color: Colors.black26,
                       child: const Center(child: CircularProgressIndicator()),

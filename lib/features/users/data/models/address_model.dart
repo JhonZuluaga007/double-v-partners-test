@@ -8,7 +8,6 @@ class AddressModel extends AddressEntity {
     required super.municipality,
   });
 
-  /// Crea un AddressModel desde JSON
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
       id: json['id'] as String?,

@@ -6,7 +6,9 @@ import '../features/users/domain/repositories/user_repository.dart';
 import '../features/users/domain/usecases/create_user_usecase.dart';
 import '../features/users/domain/usecases/get_user_by_id_usecase.dart';
 import '../features/users/domain/usecases/get_users_usecase.dart';
-import '../features/users/presentation/bloc/user/user_bloc.dart';
+import '../features/users/presentation/bloc/create_user/create_user_bloc.dart';
+import '../features/users/presentation/bloc/user_detail/user_detail_bloc.dart';
+import '../features/users/presentation/bloc/users_list/users_list_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -30,10 +32,14 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => CreateUserUseCase(getIt<UserRepository>()));
 
   getIt.registerFactory(
-    () => UserBloc(
-      getUsersUseCase: getIt<GetUsersUseCase>(),
-      getUserByIdUseCase: getIt<GetUserByIdUseCase>(),
-      createUserUseCase: getIt<CreateUserUseCase>(),
-    ),
+    () => UsersListBloc(getUsersUseCase: getIt<GetUsersUseCase>()),
+  );
+
+  getIt.registerFactory(
+    () => CreateUserBloc(createUserUseCase: getIt<CreateUserUseCase>()),
+  );
+
+  getIt.registerFactory(
+    () => UserDetailBloc(getUserByIdUseCase: getIt<GetUserByIdUseCase>()),
   );
 }
